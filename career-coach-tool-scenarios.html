@@ -1,0 +1,707 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI职业教练 - MVP路径与工具场景分析</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap');
+:root{--primary:#6366f1;--primary-dark:#4f46e5;--primary-light:#a5b4fc;--accent:#f59e0b;--success:#10b981;--danger:#ef4444;--bg-dark:#0f172a;--bg-card:#1e293b;--text-light:#e2e8f0;--text-muted:#94a3b8;--border:#334155;--gradient-1:linear-gradient(135deg,#667eea 0%,#764ba2 100%);--gradient-2:linear-gradient(135deg,#f093fb 0%,#f5576c 100%);--gradient-3:linear-gradient(135deg,#4facfe 0%,#00f2fe 100%);--gradient-4:linear-gradient(135deg,#fa709a 0%,#fee140 100%)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans SC','Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-dark);color:var(--text-light);line-height:1.6;overflow-x:hidden}
+.bg-pattern{position:fixed;top:0;left:0;width:100%;height:100%;z-index:-1;opacity:.03;background-image:radial-gradient(circle at 20% 50%,var(--primary) 0%,transparent 50%),radial-gradient(circle at 80% 80%,var(--accent) 0%,transparent 50%),radial-gradient(circle at 40% 20%,var(--success) 0%,transparent 50%)}
+.container{max-width:1400px;margin:0 auto;padding:20px}
+.hero{text-align:center;padding:80px 20px 60px;position:relative}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:900;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:16px}
+.subtitle{font-size:clamp(14px,2vw,18px);color:var(--text-muted);font-weight:300}
+.quick-nav{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;padding:30px 20px}
+.nav-btn{padding:12px 24px;background:var(--bg-card);color:var(--text-light);text-decoration:none;border-radius:12px;font-size:14px;font-weight:600;border:1px solid var(--border);transition:all .3s ease}
+.nav-btn:hover{transform:translateY(-2px);border-color:var(--primary);box-shadow:0 10px 30px rgba(99,102,241,.3)}
+.section{margin:80px 0}
+.section-header{display:flex;align-items:center;margin-bottom:32px;padding-bottom:16px;border-bottom:2px solid var(--border)}
+.section-icon{font-size:32px;margin-right:16px}
+.section-title{font-size:clamp(24px,4vw,36px);font-weight:800;background:var(--gradient-1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.card{background:var(--bg-card);border-radius:20px;padding:32px;margin:24px 0;border:1px solid var(--border);transition:all .3s ease}
+.card:hover{border-color:var(--primary);box-shadow:0 10px 40px rgba(99,102,241,.2)}
+.card-title{font-size:20px;font-weight:700;margin-bottom:20px;color:var(--text-light)}
+.table-container{overflow-x:auto;border-radius:12px;background:rgba(15,23,42,.5)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead{background:rgba(99,102,241,.1)}
+th{padding:16px 12px;text-align:left;font-weight:700;color:var(--text-light);text-transform:uppercase;font-size:12px;letter-spacing:.5px}
+td{padding:16px 12px;border-bottom:1px solid rgba(51,65,85,.5);color:var(--text-muted)}
+tbody tr:hover{background:rgba(99,102,241,.05)}
+.highlight-box{border-radius:24px;padding:48px;margin:40px 0;position:relative;overflow:hidden}
+.highlight-text{text-align:center;color:rgba(255,255,255,.95);font-size:16px;line-height:1.8;margin-top:24px}
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin:32px 0}
+.insight-card{background:var(--bg-card);border-radius:16px;padding:28px;border-left:4px solid var(--primary);transition:all .3s ease}
+.insight-card:hover{transform:translateX(8px);box-shadow:0 10px 40px rgba(99,102,241,.2)}
+.insight-card h4{font-size:18px;margin-bottom:12px;color:var(--text-light)}
+.insight-card p{font-size:14px;color:var(--text-muted);line-height:1.7}
+.quote-box{background:rgba(245,158,11,.1);border-left:4px solid var(--accent);border-radius:12px;padding:24px;margin:24px 0;font-size:15px;line-height:1.8}
+.quote-box strong{color:var(--accent);font-weight:700}
+.tag{display:inline-block;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700}
+.tag-s{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+.tag-a{background:rgba(245,158,11,.2);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.tag-b{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+.tag-c{background:rgba(148,163,184,.2);color:#94a3b8;border:1px solid rgba(148,163,184,.3)}
+.tag-out{background:rgba(51,65,85,.3);color:#64748b;border:1px solid rgba(51,65,85,.5)}
+.vs-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:768px){.vs-grid{grid-template-columns:1fr}.hero{padding:60px 20px 40px}.insight-grid{grid-template-columns:1fr}.section{margin:50px 0}}
+.timeline{position:relative;padding-left:40px;margin:24px 0}
+.timeline::before{content:'';position:absolute;left:16px;top:0;bottom:0;width:3px;background:linear-gradient(to bottom,var(--primary),var(--accent),var(--success))}
+.timeline-item{position:relative;margin-bottom:32px}
+.timeline-item::before{content:'';position:absolute;left:-32px;top:8px;width:14px;height:14px;border-radius:50%;background:var(--primary);border:3px solid var(--bg-dark);z-index:1}
+.timeline-item:nth-child(2)::before{background:var(--accent)}
+.timeline-item:nth-child(3)::before{background:var(--success)}
+.timeline-item:nth-child(4)::before{background:#f093fb}
+.timeline-item h4{font-size:16px;color:var(--text-light);margin-bottom:8px}
+.timeline-item p{font-size:14px;color:var(--text-muted);line-height:1.7}
+.formula-box{background:linear-gradient(135deg,rgba(99,102,241,.15),rgba(245,158,11,.15));border-radius:16px;padding:32px;text-align:center;margin:32px 0;border:1px solid rgba(99,102,241,.3)}
+.formula{font-size:clamp(18px,3vw,28px);font-weight:900;color:white;letter-spacing:1px}
+.formula span{color:var(--accent)}
+.scroll-top{position:fixed;bottom:40px;right:40px;width:50px;height:50px;background:var(--gradient-1);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:0;transform:translateY(100px);transition:all .3s ease;z-index:1000;box-shadow:0 10px 30px rgba(99,102,241,.4)}
+.scroll-top.visible{opacity:1;transform:translateY(0)}
+.scroll-top::before{content:'\2191';color:white;font-size:24px;font-weight:bold}
+.footer{text-align:center;padding:60px 20px;color:var(--text-muted);font-size:13px;border-top:1px solid var(--border);margin-top:100px}
+.check{color:#10b981}.cross{color:#ef4444}
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="container">
+
+<div class="hero">
+<h1>MVP路径与工具场景分析</h1>
+<p style="font-size:clamp(18px,3vw,24px);font-weight:700;color:white;margin-bottom:8px;letter-spacing:2px">AI职业人生教练 · 刘阳 · 2026年3月30日</p>
+<p class="subtitle">MVP本质逻辑 · 路线深度辩论 · 49个工具场景三维度分析 · 情感生长机制</p>
+</div>
+
+<div class="quick-nav">
+<a href="#logic" class="nav-btn">🔗 MVP逻辑链</a>
+<a href="#debate" class="nav-btn">⚔️ 路线辩论</a>
+<a href="#formula" class="nav-btn">🧪 正确公式</a>
+<a href="#dim1" class="nav-btn">🔧 维度一：核心动作</a>
+<a href="#dim2" class="nav-btn">💛 维度二：情感筛选</a>
+<a href="#dim3" class="nav-btn">📊 维度三：阶段映射</a>
+<a href="#conclusion" class="nav-btn">🎯 最终结论</a>
+</div>
+<!-- ========== PART 1: MVP逻辑链 ========== -->
+<section class="section" id="logic">
+<div class="section-header">
+<span class="section-icon">🔗</span>
+<h2 class="section-title">MVP的本质逻辑链</h2>
+</div>
+
+<div class="highlight-box" style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 50%,#1e1b4b 100%);box-shadow:0 20px 60px rgba(99,102,241,.4)">
+<div style="position:relative;z-index:1;text-align:center">
+<h2 style="font-size:28px;margin-bottom:32px;color:white;font-weight:900">🎯 核心模型</h2>
+<div style="display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:16px;font-size:clamp(16px,2.5vw,22px);font-weight:800">
+<div style="background:rgba(99,102,241,.3);padding:16px 24px;border-radius:12px;border:1px solid rgba(99,102,241,.5)">🔧 工具钩子拉新</div>
+<div style="color:var(--accent);font-size:28px">→</div>
+<div style="background:rgba(245,158,11,.3);padding:16px 24px;border-radius:12px;border:1px solid rgba(245,158,11,.5)">💛 情感渗透留存</div>
+<div style="color:var(--accent);font-size:28px">→</div>
+<div style="background:rgba(16,185,129,.3);padding:16px 24px;border-radius:12px;border:1px solid rgba(16,185,129,.5)">🧠 记忆壁垒锁客</div>
+</div>
+<p class="highlight-text" style="margin-top:32px">
+背后的核心假设：<strong>用户不会主动寻找"职业教练"，但会主动寻找"解决眼前问题的工具"。</strong><br>
+思路模型：先解决短期痛点，再升级为长期关系。
+</p>
+</div>
+</div>
+
+<div class="quote-box" style="border-left:4px solid var(--danger)">
+<strong style="color:#f87171">⚠️ 但这个思路可能存在问题</strong><br><br>
+<strong>从"工具"到"教练"的转化是否成立？</strong><br>
+假设用户会因为"AI多问了一句情感问题"就产生连接。但现实是——用户来用工具的时候，心态是<strong>"帮我解决问题然后走"</strong>。你突然问他"你真正犹豫的是什么"，他可能觉得"关你什么事"。<br><br>
+工具心态和教练心态是两种完全不同的用户预期。硬要在一个里面切换到另一个，可能<strong>两头不讨好</strong>。
+</div>
+</section>
+
+<!-- ========== PART 2: 路线辩论 ========== -->
+<section class="section" id="debate">
+<div class="section-header">
+<span class="section-icon">⚔️</span>
+<h2 class="section-title">路线深度辩论：先工具 vs 先情感</h2>
+</div>
+
+<div class="vs-grid">
+<div class="card" style="border-top:4px solid var(--primary)">
+<div class="card-title" style="color:var(--primary-light)">🔧 路线一：先工具后情感</div>
+<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;padding:12px;background:rgba(99,102,241,.1);border-radius:8px"><strong style="color:var(--text-light)">底层假设：</strong>人的行为逻辑是"先解决问题，再建立关系"。用户不会无缘无故信任一个AI，必须先证明你有用。</p>
+
+<h4 style="color:#10b981;margin:16px 0 12px">✅ 优势</h4>
+<ul style="color:var(--text-muted);font-size:13px;line-height:2.2;list-style:none;padding:0">
+<li>✅ <strong style="color:var(--text-light)">获客明确</strong> —— "帮你分析Offer/写周报/谈薪"，用户一听就知道你能干嘛，下载动机清晰</li>
+<li>✅ <strong style="color:var(--text-light)">价值可量化</strong> —— "帮你多谈了15%薪资"、"省了2小时写报告"，用户能感知具体收益</li>
+<li>✅ <strong style="color:var(--text-light)">试错成本低</strong> —— 用一个工具不需要暴露自己，心理门槛低</li>
+<li>✅ <strong style="color:var(--text-light)">符合中国用户习惯</strong> —— 中国用户对"效率工具"的付费意愿远高于"情感陪伴"</li>
+</ul>
+
+<h4 style="color:#ef4444;margin:16px 0 12px">❌ 劣势</h4>
+<ul style="color:var(--text-muted);font-size:13px;line-height:2.2;list-style:none;padding:0">
+<li>❌ <strong style="color:var(--text-light)">工具陷阱</strong> —— 用户把你定义为工具后，很难改变认知。你不会觉得计算器"懂你"</li>
+<li>❌ <strong style="color:var(--text-light)">情感转化逆人性</strong> —— 用户带着"解决问题"的心态来，你突然问"你真正在意的是什么"，这不是惊喜，是打扰</li>
+<li>❌ <strong style="color:var(--text-light)">可替代性强</strong> —— 工具的护城河在功能，功能可以被抄。今天你做Offer分析，明天BOSS直聘也做了</li>
+<li>❌ <strong style="color:var(--text-light)">频次决定天花板</strong> —— 如果工具是低频场景（Offer分析一年1次），根本没有足够触点做情感渗透</li>
+</ul>
+</div>
+
+<div class="card" style="border-top:4px solid var(--accent)">
+<div class="card-title" style="color:#fcd34d">💛 路线二：先情感后工具</div>
+<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;padding:12px;background:rgba(245,158,11,.1);border-radius:8px"><strong style="color:var(--text-light)">底层假设：</strong>人在职业中最缺的不是工具，是"有人懂我"。工具到处都是，但真正理解你职业处境的人/AI几乎没有。</p>
+
+<h4 style="color:#10b981;margin:16px 0 12px">✅ 优势</h4>
+<ul style="color:var(--text-muted);font-size:13px;line-height:2.2;list-style:none;padding:0">
+<li>✅ <strong style="color:var(--text-light)">差异化极强</strong> —— 所有竞品都在卷工具，没有人在做"职业情感连接"</li>
+<li>✅ <strong style="color:var(--text-light)">一旦建立关系就很难替代</strong> —— 用户不会轻易放弃一个"了解自己"的AI，这是最深的护城河</li>
+<li>✅ <strong style="color:var(--text-light)">自然延伸到工具</strong> —— 当用户信任你之后，你推荐任何工具功能都是"朋友的建议"，转化率极高</li>
+<li>✅ <strong style="color:var(--text-light)">LTV极高</strong> —— 情感关系意味着长期订阅，不是一次性付费</li>
+</ul>
+
+<h4 style="color:#ef4444;margin:16px 0 12px">❌ 劣势</h4>
+<ul style="color:var(--text-muted);font-size:13px;line-height:2.2;list-style:none;padding:0">
+<li>❌ <strong style="color:var(--text-light)">获客极难</strong> —— "来跟AI聊聊你的职业困惑"——在中国市场几乎等于零转化</li>
+<li>❌ <strong style="color:var(--text-light)">首次体验要求极高</strong> —— 如果第一次对话没能让用户感觉"它真的懂"，就没有第二次了</li>
+<li>❌ <strong style="color:var(--text-light)">价值难以量化</strong> —— "我感觉它懂我"不是一个可以写在广告里的卖点</li>
+<li>❌ <strong style="color:var(--text-light)">冷启动问题</strong> —— AI还不了解用户时怎么做到"懂你"？用户凭什么在你没证明自己之前就信任你？</li>
+</ul>
+</div>
+</div>
+
+<div class="card" style="margin-top:32px">
+<div class="card-title">🔍 关键问题提炼</div>
+<div class="vs-grid" style="gap:16px">
+<div style="background:rgba(99,102,241,.1);border-radius:12px;padding:20px;border:1px solid rgba(99,102,241,.2)">
+<h4 style="color:var(--primary-light);margin-bottom:8px">路线一的核心问题</h4>
+<p style="color:var(--text-muted);font-size:14px">不是"工具不好"，而是<strong style="color:white">从工具到情感的跳跃太大</strong>。用户认定你是工具，就很难改口叫你教练。</p>
+</div>
+<div style="background:rgba(245,158,11,.1);border-radius:12px;padding:20px;border:1px solid rgba(245,158,11,.2)">
+<h4 style="color:#fcd34d;margin-bottom:8px">路线二的核心问题</h4>
+<p style="color:var(--text-muted);font-size:14px">不是"情感不好"，而是<strong style="color:white">没有载体让情感自然发生</strong>。用户没有理由主动来找你建立情感。</p>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ========== PART 3: 正确公式 ========== -->
+<section class="section" id="formula">
+<div class="section-header">
+<span class="section-icon">🧪</span>
+<h2 class="section-title">判断与正确公式</h2>
+</div>
+
+<div class="highlight-box" style="background:linear-gradient(135deg,#14532d 0%,#065f46 50%,#14532d 100%);box-shadow:0 20px 60px rgba(16,185,129,.3)">
+<div style="position:relative;z-index:1">
+<h2 style="font-size:26px;margin-bottom:24px;color:white;font-weight:900;text-align:center">✅ 我的判断：路线一，但要重新定义"工具"</h2>
+<div class="insight-grid" style="margin:0">
+<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:20px">
+<h4 style="color:#6ee7b7;margin-bottom:12px">原因 1：中国文化问题</h4>
+<p style="color:rgba(255,255,255,.85);font-size:14px;line-height:1.8">中国职场人对"跟AI聊职业困惑"接受度极低。"聊困惑"在文化上等于"承认自己不行"。用户宁可憋着也不会主动打开一个App说"我迷茫了"。<br><br>而"用一个工具"没有这个心理负担。"我在用AI帮我分析Offer"——这是聪明人的选择，不丢人。</p>
+</div>
+<div style="background:rgba(255,255,255,.1);border-radius:12px;padding:20px">
+<h4 style="color:#6ee7b7;margin-bottom:12px">原因 2：工具选错了</h4>
+<p style="color:rgba(255,255,255,.85);font-size:14px;line-height:1.8">之前选"Offer分析"作为钩子——这是低频、窄受众的工具。真正的问题是：<br><br>如果工具是<strong>高频的</strong>、每次使用都需要用户输入个人上下文的，情感就会<strong>自然发生</strong>。</p>
+</div>
+</div>
+</div>
+</div>
+
+<div class="formula-box">
+<p style="color:var(--text-muted);font-size:14px;margin-bottom:20px">正确公式</p>
+<div class="formula">
+<span>高频工具（每周/每天）</span>
+<span style="color:white;margin:0 16px">×</span>
+<span>需要用户暴露职业上下文</span>
+<span style="color:white;margin:0 16px">×</span>
+<span>AI记住一切</span>
+</div>
+<div style="font-size:36px;color:var(--accent);margin:20px 0">=</div>
+<div style="font-size:24px;font-weight:900;color:white">情感自然发生</div>
+<p style="color:var(--text-muted);font-size:14px;margin-top:16px">不是"先工具后情感"——而是"工具和情感同时发生，只是用户先感知到工具价值，后感知到情感价值"</p>
+</div>
+
+<div class="card">
+<div class="card-title">📅 情感涌现时间线</div>
+<div class="timeline">
+<div class="timeline-item">
+<h4>第 1 周</h4>
+<p>用户觉得："这个AI帮我写周报挺好用的。" → 纯工具价值感知，情感还未启动</p>
+</div>
+<div class="timeline-item">
+<h4>第 1 个月</h4>
+<p>用户觉得："它好像挺了解我工作的。" → 开始感知AI在积累对自己的理解</p>
+</div>
+<div class="timeline-item">
+<h4>第 3 个月</h4>
+<p>用户觉得："它比我领导还知道我的处境。" → 信任感建立，教练关系自然形成</p>
+</div>
+<div class="timeline-item">
+<h4>第 6 个月</h4>
+<p>用户觉得："跳槽的时候，我想先问问它的意见。" → 情感依赖完成，护城河形成</p>
+</div>
+</div>
+<div class="quote-box" style="margin-top:0">
+<strong>核心洞察：</strong>情感不是一个需要设计的"转化步骤"，而是一个自然浮现的"涌现现象"——只要你选对了工具场景。<br>
+情感不是"设计"出来的，是<strong>"积累"</strong>出来的。
+</div>
+</div>
+</section>
+
+<!-- ========== PART 4: 维度一 ========== -->
+<section class="section" id="dim1">
+<div class="section-header">
+<span class="section-icon">🔧</span>
+<h2 class="section-title">维度一：职业成长核心动作 × 工具场景穷举</h2>
+</div>
+<p style="color:var(--text-muted);margin-bottom:24px">遍历用户整个职场，穷举所有可能的工具场景（共49个）</p>
+
+<div class="card">
+<div class="card-title">1. 认识自己（6个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>1.1</td><td>性格/优势测评</td><td>MBTI、盖洛普优势、霍兰德职业兴趣等测评工具</td></tr>
+<tr><td>1.2</td><td>价值观梳理</td><td>引导用户排列职业价值观优先级（钱、自由、成长、稳定…）</td></tr>
+<tr><td>1.3</td><td>能力自评/盘点</td><td>系统性盘点自己会什么、不会什么、擅长什么</td></tr>
+<tr><td>1.4</td><td>职业兴趣探索</td><td>通过问答或体验帮用户发现对什么领域真正有热情</td></tr>
+<tr><td>1.5</td><td>过往经历复盘</td><td>引导用户回顾过去的工作/项目，提炼出模式和偏好</td></tr>
+<tr><td>1.6</td><td>他人反馈收集</td><td>帮用户向同事/朋友收集"别人眼中的我"</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">2. 规划路径（7个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>2.1</td><td>职业目标设定</td><td>帮用户明确1年/3年/5年职业目标</td></tr>
+<tr><td>2.2</td><td>路径拆解</td><td>把大目标拆成可执行的阶段和步骤</td></tr>
+<tr><td>2.3</td><td>差距分析</td><td>对比"我现在在哪"和"我要去哪"，识别gap</td></tr>
+<tr><td>2.4</td><td>行业/岗位研究</td><td>了解目标岗位的要求、薪资、前景、日常</td></tr>
+<tr><td>2.5</td><td>转型可行性评估</td><td>评估从A方向转B方向的难度、路径、所需资源</td></tr>
+<tr><td>2.6</td><td>学习计划制定</td><td>根据差距生成具体的学习/提升计划</td></tr>
+<tr><td>2.7</td><td>时间线/里程碑规划</td><td>给计划加上时间节点和检查点</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">3. 积累能力（7个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>3.1</td><td>学习资源管理</td><td>收藏、分类、管理课程/书籍/文章等学习资源</td></tr>
+<tr><td>3.2</td><td>学习进度追踪</td><td>记录课程完成度、读书进度、练习量</td></tr>
+<tr><td>3.3</td><td>知识笔记整理</td><td>把学到的东西结构化记录，形成自己的知识体系</td></tr>
+<tr><td>3.4</td><td>刻意练习记录</td><td>针对某项技能的专项练习和进步记录</td></tr>
+<tr><td>3.5</td><td>证书/资质追踪</td><td>管理要考的证书、备考进度、已获得证书</td></tr>
+<tr><td>3.6</td><td>技能树/能力地图</td><td>可视化展示自己的技能矩阵和掌握程度</td></tr>
+<tr><td>3.7</td><td>行业知识库</td><td>积累行业洞察、趋势、术语、框架</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">4. 记录成长（7个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>4.1</td><td>工作日志/周记</td><td>记录每天/每周做了什么、学了什么、想了什么</td></tr>
+<tr><td>4.2</td><td>项目复盘</td><td>每个项目结束后结构化复盘：做了什么、学到什么、下次改什么</td></tr>
+<tr><td>4.3</td><td>成就记录/高光时刻</td><td>专门记录值得骄傲的瞬间：被表扬、完成挑战、突破自我</td></tr>
+<tr><td>4.4</td><td>失败/教训记录</td><td>记录踩过的坑和犯过的错，提炼经验</td></tr>
+<tr><td>4.5</td><td>成长时间线</td><td>把所有里程碑事件串成可视化时间线</td></tr>
+<tr><td>4.6</td><td>数据化成长看板</td><td>用数据展示成长轨迹（技能提升曲线、薪资变化等）</td></tr>
+<tr><td>4.7</td><td>年度职业复盘</td><td>每年一次的全面职业回顾和总结</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">5. 构建关系（6个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>5.1</td><td>人脉记录/管理</td><td>记录认识的人、怎么认识的、对方的信息和关系强度</td></tr>
+<tr><td>5.2</td><td>社交互动提醒</td><td>提醒定期联络重要人脉（多久没联系了）</td></tr>
+<tr><td>5.3</td><td>贵人/导师管理</td><td>专门管理对自己职业有重要影响的人</td></tr>
+<tr><td>5.4</td><td>社交事件记录</td><td>记录每次有价值的社交互动：聊了什么、有什么收获</td></tr>
+<tr><td>5.5</td><td>行业社群/圈子追踪</td><td>管理自己加入的社群、参加的活动</td></tr>
+<tr><td>5.6</td><td>推荐人/背书管理</td><td>管理可以为自己背书的人，以及自己能帮谁背书</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">6. 展示自己（6个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>6.1</td><td>简历管理</td><td>维护和迭代自己的简历，针对不同岗位版本管理</td></tr>
+<tr><td>6.2</td><td>作品集/Portfolio</td><td>收集和展示自己的代表作品</td></tr>
+<tr><td>6.3</td><td>个人品牌内容管理</td><td>管理自己在各平台发布的文章、分享、演讲</td></tr>
+<tr><td>6.4</td><td>自我介绍/Elevator Pitch</td><td>针对不同场景准备和打磨自我介绍</td></tr>
+<tr><td>6.5</td><td>职业故事线</td><td>把碎片化的经历编织成有说服力的叙事</td></tr>
+<tr><td>6.6</td><td>推荐信/评价收集</td><td>收集和管理来自他人的正面评价和推荐</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">7. 做出决策（5个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>7.1</td><td>Offer对比/决策矩阵</td><td>多维度对比不同选择（岗位、公司、城市）</td></tr>
+<tr><td>7.2</td><td>跳槽时机评估</td><td>评估当前是否该动、风险和收益</td></tr>
+<tr><td>7.3</td><td>薪资谈判准备</td><td>收集市场数据、准备谈判策略</td></tr>
+<tr><td>7.4</td><td>职业决策日记</td><td>记录重大决策的思考过程，供未来回看</td></tr>
+<tr><td>7.5</td><td>风险评估/Plan B</td><td>评估决策风险，准备备选方案</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">8. 应对情绪（6个场景）</div>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>具体描述</th></tr></thead>
+<tbody>
+<tr><td>8.1</td><td>职业情绪日记</td><td>记录工作中的情绪波动和触发原因</td></tr>
+<tr><td>8.2</td><td>倦怠自检/预警</td><td>定期评估自己的倦怠程度，早期预警</td></tr>
+<tr><td>8.3</td><td>焦虑拆解</td><td>把模糊的职业焦虑拆解成具体的可解决问题</td></tr>
+<tr><td>8.4</td><td>成就回看/自我激励</td><td>在低谷时回看自己的成就记录，重建信心</td></tr>
+<tr><td>8.5</td><td>职业吐槽/宣泄</td><td>安全的私密空间记录负面情绪</td></tr>
+<tr><td>8.6</td><td>职业冥想/正念引导</td><td>针对职场压力的心理调适工具</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="quote-box">
+<strong>维度一汇总：</strong>8个核心动作，49个工具场景，覆盖职业成长全链路。下一步通过情感生长机制筛选，找出其中真正有护城河价值的场景。
+</div>
+</section>
+
+<!-- ========== PART 5: 维度二 ========== -->
+<section class="section" id="dim2">
+<div class="section-header">
+<span class="section-icon">💛</span>
+<h2 class="section-title">维度二：情感生长机制筛选</h2>
+</div>
+<p style="color:var(--text-muted);margin-bottom:8px">从49个场景中，筛选出有情感价值的场景，标注优先级</p>
+
+<div class="card">
+<div class="card-title">5种情感生长机制说明</div>
+<div class="insight-grid">
+<div class="insight-card" style="border-left:4px solid #6366f1">
+<h4>🏔️ 积累可见</h4>
+<p>用得越久堆积越多，回看时情感爆发。时间是唯一原料，不需要额外设计情感环节。</p>
+</div>
+<div class="insight-card" style="border-left:4px solid #f59e0b">
+<h4>💬 自我对话</h4>
+<p>工具动作迫使用户跟自己对话（写、整理、复盘）。AI在这个过程中自然成为"倾听者"。</p>
+</div>
+<div class="insight-card" style="border-left:4px solid #10b981">
+<h4>🪞 身份确认</h4>
+<p>工具输出反复告诉用户"你是谁"。每次使用都在强化用户的自我认知和职业身份。</p>
+</div>
+<div class="insight-card" style="border-left:4px solid #f093fb">
+<h4>🚩 里程碑标记</h4>
+<p>模糊进步变成清晰节点。用户能看到"我从哪里走到了哪里"，成就感是最强的粘性。</p>
+</div>
+<div class="insight-card" style="border-left:4px solid #4facfe">
+<h4>📣 外部反馈内化</h4>
+<p>帮用户收集和消化来自外部的评价。AI成为"翻译器"，把外部反馈转化为内在认知。</p>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">49个场景完整筛选表</div>
+<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">优先级：S=4种机制 | A=3种机制 | B=2种机制 | C=1种机制 | 排除=0种机制</p>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>🏔️</th><th>💬</th><th>🪞</th><th>🚩</th><th>📣</th><th>机制数</th><th>优先级</th></tr></thead>
+<tbody>
+<tr><td>1.1</td><td>性格/优势测评</td><td></td><td></td><td>✅</td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>1.2</td><td>价值观梳理</td><td></td><td>✅</td><td>✅</td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>1.3</td><td>能力自评/盘点</td><td></td><td>✅</td><td>✅</td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>1.4</td><td>职业兴趣探索</td><td></td><td>✅</td><td>✅</td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>1.5</td><td><strong>过往经历复盘</strong></td><td>✅</td><td>✅</td><td>✅</td><td></td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr><td>1.6</td><td>他人反馈收集</td><td></td><td></td><td>✅</td><td></td><td>✅</td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>2.1</td><td>职业目标设定</td><td></td><td>✅</td><td></td><td>✅</td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>2.2</td><td>路径拆解</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+<tr><td>2.3</td><td>差距分析</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>2.4</td><td>行业/岗位研究</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+<tr><td>2.5</td><td>转型可行性评估</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>2.6</td><td>学习计划制定</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+<tr><td>2.7</td><td>时间线/里程碑规划</td><td></td><td></td><td></td><td>✅</td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>3.1</td><td>学习资源管理</td><td>✅</td><td></td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>3.2</td><td>学习进度追踪</td><td>✅</td><td></td><td></td><td>✅</td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>3.3</td><td>知识笔记整理</td><td>✅</td><td>✅</td><td></td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>3.4</td><td>刻意练习记录</td><td>✅</td><td></td><td></td><td>✅</td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>3.5</td><td>证书/资质追踪</td><td>✅</td><td></td><td></td><td>✅</td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>3.6</td><td><strong>技能树/能力地图</strong></td><td>✅</td><td></td><td>✅</td><td>✅</td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr><td>3.7</td><td>行业知识库</td><td>✅</td><td></td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>4.1</td><td>工作日志/周记</td><td>✅</td><td>✅</td><td></td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>4.2</td><td><strong>项目复盘</strong></td><td>✅</td><td>✅</td><td></td><td>✅</td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr style="background:rgba(239,68,68,.07)"><td>4.3</td><td><strong>成就记录/高光时刻</strong></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td></td><td><strong>4</strong></td><td><span class="tag tag-s">S</span></td></tr>
+<tr><td>4.4</td><td>失败/教训记录</td><td>✅</td><td>✅</td><td></td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>4.5</td><td><strong>成长时间线</strong></td><td>✅</td><td></td><td>✅</td><td>✅</td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>4.6</td><td><strong>数据化成长看板</strong></td><td>✅</td><td></td><td>✅</td><td>✅</td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr style="background:rgba(239,68,68,.07)"><td>4.7</td><td><strong>年度职业复盘</strong></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td></td><td><strong>4</strong></td><td><span class="tag tag-s">S</span></td></tr>
+<tr><td>5.1</td><td>人脉记录/管理</td><td>✅</td><td></td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>5.2</td><td>社交互动提醒</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>5.3</td><td><strong>贵人/导师管理</strong></td><td>✅</td><td>✅</td><td></td><td></td><td>✅</td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr><td>5.4</td><td>社交事件记录</td><td>✅</td><td>✅</td><td></td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>5.5</td><td>行业社群/圈子追踪</td><td>✅</td><td></td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>5.6</td><td>推荐人/背书管理</td><td></td><td></td><td></td><td></td><td>✅</td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.1</td><td><strong>简历管理</strong></td><td>✅</td><td>✅</td><td>✅</td><td></td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.2</td><td><strong>作品集/Portfolio</strong></td><td>✅</td><td></td><td>✅</td><td>✅</td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.3</td><td><strong>个人品牌内容管理</strong></td><td>✅</td><td></td><td>✅</td><td></td><td>✅</td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr><td>6.4</td><td>自我介绍/Elevator Pitch</td><td></td><td>✅</td><td>✅</td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.5</td><td><strong>职业故事线</strong></td><td>✅</td><td>✅</td><td>✅</td><td></td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr><td>6.6</td><td>推荐信/评价收集</td><td>✅</td><td></td><td></td><td></td><td>✅</td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>7.1</td><td>Offer对比/决策矩阵</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>7.2</td><td>跳槽时机评估</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>7.3</td><td>薪资谈判准备</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>7.4</td><td><strong>职业决策日记</strong></td><td>✅</td><td>✅</td><td></td><td>✅</td><td></td><td><strong>3</strong></td><td><span class="tag tag-a">A</span></td></tr>
+<tr><td>7.5</td><td>风险评估/Plan B</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+<tr><td>8.1</td><td>职业情绪日记</td><td>✅</td><td>✅</td><td></td><td></td><td></td><td>2</td><td><span class="tag tag-b">B</span></td></tr>
+<tr><td>8.2</td><td>倦怠自检/预警</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>8.3</td><td>焦虑拆解</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr style="background:rgba(239,68,68,.07)"><td>8.4</td><td><strong>成就回看/自我激励</strong></td><td>✅</td><td>✅</td><td>✅</td><td>✅</td><td></td><td><strong>4</strong></td><td><span class="tag tag-s">S</span></td></tr>
+<tr><td>8.5</td><td>职业吐槽/宣泄</td><td></td><td>✅</td><td></td><td></td><td></td><td>1</td><td><span class="tag tag-c">C</span></td></tr>
+<tr><td>8.6</td><td>职业冥想/正念引导</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td><span class="tag tag-out">排除</span></td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">筛选结果汇总</div>
+<div class="table-container"><table>
+<thead><tr><th>优先级</th><th>标准</th><th>数量</th><th>代表场景</th></tr></thead>
+<tbody>
+<tr style="background:rgba(239,68,68,.07)"><td><span class="tag tag-s">S 级</span></td><td>4种情感机制</td><td><strong style="color:#fca5a5">3个</strong></td><td>成就记录/高光时刻、年度职业复盘、成就回看/自我激励</td></tr>
+<tr style="background:rgba(245,158,11,.07)"><td><span class="tag tag-a">A 级</span></td><td>3种情感机制</td><td><strong style="color:#fcd34d">11个</strong></td><td>过往经历复盘、技能树/能力地图、项目复盘、成长时间线、数据化成长看板、贵人/导师管理、简历管理、作品集、个人品牌内容管理、职业故事线、职业决策日记</td></tr>
+<tr style="background:rgba(99,102,241,.07)"><td><span class="tag tag-b">B 级</span></td><td>2种情感机制</td><td><strong style="color:#a5b4fc">16个</strong></td><td>价值观梳理、能力自评、职业兴趣探索、他人反馈收集、职业目标设定、学习进度追踪、知识笔记整理、刻意练习记录、证书/资质追踪、工作日志/周记、失败/教训记录、社交事件记录、自我介绍、推荐信收集、职业情绪日记等</td></tr>
+<tr><td><span class="tag tag-c">C 级</span></td><td>1种情感机制</td><td>13个</td><td>情感浓度低，不作为优先</td></tr>
+<tr><td><span class="tag tag-out">排除</span></td><td>0种情感机制</td><td>6个</td><td>路径拆解、行业岗位研究、学习计划制定、薪资谈判准备、社交互动提醒、风险评估/Plan B、职业冥想</td></tr>
+</tbody></table></div>
+</div>
+</section>
+
+<!-- ========== PART 6: 维度三 ========== -->
+<section class="section" id="dim3">
+<div class="section-header">
+<span class="section-icon">📊</span>
+<h2 class="section-title">维度三：成长阶段 × 全场景映射</h2>
+</div>
+<p style="color:var(--text-muted);margin-bottom:24px">按5个职业阶段划分所有场景，标识情感价值（● 需求强烈 ○ 有需求 空白 基本不涉及）</p>
+
+<div class="card" style="margin-bottom:16px">
+<div class="card-title">阶段定义</div>
+<div class="table-container"><table>
+<thead><tr><th>阶段</th><th>定义</th><th>核心情绪</th></tr></thead>
+<tbody>
+<tr><td>🌱 探索期</td><td>学生/实习/刚毕业，不确定方向</td><td>迷茫、兴奋</td></tr>
+<tr><td>🚀 立足期</td><td>工作1-3年，站稳脚跟，建立基本能力</td><td>焦虑、证明自己</td></tr>
+<tr><td>⚡ 上升期</td><td>3-8年，快速成长，寻求突破</td><td>野心、突破感</td></tr>
+<tr><td>🏔️ 成熟期</td><td>8年+，有积累，面临瓶颈或转型</td><td>迷茫重现、意义感</td></tr>
+<tr><td>🦅 独立期</td><td>自由职业/创业/斜杠，独立运作</td><td>自由与不安并存</td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">完整场景 × 阶段映射表</div>
+<p style="color:var(--text-muted);font-size:13px;margin-bottom:16px"><strong style="color:#fca5a5">S</strong>/<strong style="color:#fcd34d">A</strong> 级高情感场景已加粗标记</p>
+<div class="table-container"><table>
+<thead><tr><th>#</th><th>工具场景</th><th>优先级</th><th>🌱探索期</th><th>🚀立足期</th><th>⚡上升期</th><th>🏔️成熟期</th><th>🦅独立期</th></tr></thead>
+<tbody>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">认识自己</td></tr>
+<tr><td>1.1</td><td>性格/优势测评</td><td><span class="tag tag-c">C</span></td><td>●</td><td>○</td><td></td><td>○</td><td></td></tr>
+<tr><td>1.2</td><td>价值观梳理</td><td><span class="tag tag-b">B</span></td><td>●</td><td></td><td></td><td>●</td><td>●</td></tr>
+<tr><td>1.3</td><td>能力自评/盘点</td><td><span class="tag tag-b">B</span></td><td>●</td><td>○</td><td>●</td><td>●</td><td></td></tr>
+<tr><td>1.4</td><td>职业兴趣探索</td><td><span class="tag tag-b">B</span></td><td>●</td><td>○</td><td></td><td>○</td><td></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>1.5</td><td><strong>过往经历复盘</strong></td><td><span class="tag tag-a">A</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>1.6</td><td>他人反馈收集</td><td><span class="tag tag-b">B</span></td><td></td><td>○</td><td>●</td><td>○</td><td></td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">规划路径</td></tr>
+<tr><td>2.1</td><td>职业目标设定</td><td><span class="tag tag-b">B</span></td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>2.3</td><td>差距分析</td><td><span class="tag tag-c">C</span></td><td>●</td><td>●</td><td>○</td><td></td><td></td></tr>
+<tr><td>2.5</td><td>转型可行性评估</td><td><span class="tag tag-c">C</span></td><td></td><td></td><td>○</td><td>●</td><td>●</td></tr>
+<tr><td>2.7</td><td>时间线/里程碑规划</td><td><span class="tag tag-c">C</span></td><td>○</td><td>●</td><td>●</td><td>○</td><td></td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">积累能力</td></tr>
+<tr><td>3.1</td><td>学习资源管理</td><td><span class="tag tag-c">C</span></td><td>●</td><td>●</td><td>○</td><td></td><td></td></tr>
+<tr><td>3.2</td><td>学习进度追踪</td><td><span class="tag tag-b">B</span></td><td>●</td><td>●</td><td>○</td><td></td><td></td></tr>
+<tr><td>3.3</td><td>知识笔记整理</td><td><span class="tag tag-b">B</span></td><td>●</td><td>●</td><td>●</td><td>○</td><td></td></tr>
+<tr><td>3.4</td><td>刻意练习记录</td><td><span class="tag tag-b">B</span></td><td>○</td><td>●</td><td>●</td><td></td><td></td></tr>
+<tr><td>3.5</td><td>证书/资质追踪</td><td><span class="tag tag-b">B</span></td><td>●</td><td>●</td><td>○</td><td></td><td></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>3.6</td><td><strong>技能树/能力地图</strong></td><td><span class="tag tag-a">A</span></td><td>●</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>3.7</td><td>行业知识库</td><td><span class="tag tag-c">C</span></td><td>○</td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">记录成长</td></tr>
+<tr><td>4.1</td><td>工作日志/周记</td><td><span class="tag tag-b">B</span></td><td>○</td><td>●</td><td>●</td><td>○</td><td>○</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>4.2</td><td><strong>项目复盘</strong></td><td><span class="tag tag-a">A</span></td><td></td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+<tr style="background:rgba(239,68,68,.07)"><td>4.3</td><td><strong>成就记录/高光时刻</strong></td><td><span class="tag tag-s">S</span></td><td>○</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>4.4</td><td>失败/教训记录</td><td><span class="tag tag-b">B</span></td><td>○</td><td>●</td><td>●</td><td>○</td><td></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>4.5</td><td><strong>成长时间线</strong></td><td><span class="tag tag-a">A</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>4.6</td><td><strong>数据化成长看板</strong></td><td><span class="tag tag-a">A</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr style="background:rgba(239,68,68,.07)"><td>4.7</td><td><strong>年度职业复盘</strong></td><td><span class="tag tag-s">S</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">构建关系</td></tr>
+<tr><td>5.1</td><td>人脉记录/管理</td><td><span class="tag tag-c">C</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>5.3</td><td><strong>贵人/导师管理</strong></td><td><span class="tag tag-a">A</span></td><td>○</td><td>●</td><td>●</td><td>○</td><td></td></tr>
+<tr><td>5.4</td><td>社交事件记录</td><td><span class="tag tag-b">B</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>5.5</td><td>行业社群/圈子追踪</td><td><span class="tag tag-c">C</span></td><td>○</td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>5.6</td><td>推荐人/背书管理</td><td><span class="tag tag-c">C</span></td><td></td><td>○</td><td>●</td><td>●</td><td></td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">展示自己</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.1</td><td><strong>简历管理</strong></td><td><span class="tag tag-a">A</span></td><td>●</td><td>●</td><td>●</td><td>●</td><td>○</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.2</td><td><strong>作品集/Portfolio</strong></td><td><span class="tag tag-a">A</span></td><td>○</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.3</td><td><strong>个人品牌内容管理</strong></td><td><span class="tag tag-a">A</span></td><td></td><td></td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>6.4</td><td>自我介绍/Elevator Pitch</td><td><span class="tag tag-b">B</span></td><td>●</td><td>○</td><td>●</td><td>○</td><td>●</td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>6.5</td><td><strong>职业故事线</strong></td><td><span class="tag tag-a">A</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>6.6</td><td>推荐信/评价收集</td><td><span class="tag tag-b">B</span></td><td></td><td>○</td><td>●</td><td>●</td><td></td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">做出决策</td></tr>
+<tr><td>7.1</td><td>Offer对比/决策矩阵</td><td><span class="tag tag-c">C</span></td><td>●</td><td>○</td><td>●</td><td>●</td><td></td></tr>
+<tr><td>7.2</td><td>跳槽时机评估</td><td><span class="tag tag-c">C</span></td><td></td><td>○</td><td>●</td><td>●</td><td></td></tr>
+<tr style="background:rgba(245,158,11,.05)"><td>7.4</td><td><strong>职业决策日记</strong></td><td><span class="tag tag-a">A</span></td><td>○</td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td colspan="8" style="background:rgba(99,102,241,.15);font-weight:700;color:var(--primary-light)">应对情绪</td></tr>
+<tr><td>8.1</td><td>职业情绪日记</td><td><span class="tag tag-b">B</span></td><td>○</td><td>●</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>8.2</td><td>倦怠自检/预警</td><td><span class="tag tag-c">C</span></td><td></td><td>○</td><td>●</td><td>●</td><td>○</td></tr>
+<tr><td>8.3</td><td>焦虑拆解</td><td><span class="tag tag-c">C</span></td><td>●</td><td>●</td><td>○</td><td>●</td><td>●</td></tr>
+<tr style="background:rgba(239,68,68,.07)"><td>8.4</td><td><strong>成就回看/自我激励</strong></td><td><span class="tag tag-s">S</span></td><td></td><td>○</td><td>●</td><td>●</td><td>●</td></tr>
+<tr><td>8.5</td><td>职业吐槽/宣泄</td><td><span class="tag tag-c">C</span></td><td>○</td><td>●</td><td>●</td><td>○</td><td></td></tr>
+</tbody></table></div>
+</div>
+
+<div class="card">
+<div class="card-title">各阶段关键洞察</div>
+<div class="table-container"><table>
+<thead><tr><th>阶段</th><th>核心情绪</th><th>高情感场景集中区</th><th>特点与洞察</th></tr></thead>
+<tbody>
+<tr><td>🌱 探索期</td><td>迷茫、兴奋</td><td>认识自己（1.2-1.4）、技能树（3.6）</td><td>S/A级场景少——因为还没有足够的积累来"回看"，情感原料还不够。工具需求强，但情感尚未可能发生。</td></tr>
+<tr><td>🚀 立足期</td><td>焦虑、证明自己</td><td>成就记录（4.3）、贵人管理（5.3）、简历（6.1）</td><td>开始积累，情感开始生长。这是"第一批高价值场景"落地的阶段，也是<strong>拉新的重要目标人群</strong>。</td></tr>
+<tr style="background:rgba(245,158,11,.07)"><td>⚡ 上升期</td><td>野心、突破感</td><td><strong>几乎所有S/A场景都强烈</strong></td><td>积累足够多，回看价值最大，身份认同最活跃。这是<strong>情感最浓的阶段</strong>，也是付费意愿最强的人群，是核心目标用户。</td></tr>
+<tr><td>🏔️ 成熟期</td><td>迷茫重现、意义感</td><td>年度复盘（4.7）、职业故事线（6.5）、成就回看（8.4）</td><td>情感需求从"证明自己"转向"理解自己"。工具需求降低，情感连接需求升高。高客单价用户群。</td></tr>
+<tr><td>🦅 独立期</td><td>自由与不安并存</td><td>作品集（6.2）、个人品牌（6.3）、决策日记（7.4）</td><td>需要自己给自己确认身份，工具成为"唯一的镜子"。AI职业教练对这个阶段的用户来说不是"好用的工具"，而是"必需品"。</td></tr>
+</tbody></table></div>
+</div>
+</section>
+
+<!-- ========== PART 7: 最终结论 ========== -->
+<section class="section" id="conclusion">
+<div class="section-header">
+<span class="section-icon">🎯</span>
+<h2 class="section-title">最终结论：场景选择建议</h2>
+</div>
+
+<div class="highlight-box" style="background:linear-gradient(135deg,#1e1b4b 0%,#312e81 100%);box-shadow:0 20px 60px rgba(99,102,241,.4)">
+<div style="position:relative;z-index:1;text-align:center">
+<h2 style="font-size:26px;margin-bottom:16px;color:white;font-weight:900">核心选择标准</h2>
+<p style="color:rgba(255,255,255,.85);font-size:16px;line-height:2;max-width:800px;margin:0 auto">
+选择MVP工具场景，必须同时满足：<br>
+<strong style="color:#a5b4fc">① 高频</strong>（每周甚至每天使用）<br>
+<strong style="color:#fcd34d">② 需要用户暴露职业上下文</strong>（不是查一个数据就走）<br>
+<strong style="color:#6ee7b7">③ AI的积累有价值</strong>（记住的越多，下次越好用）<br>
+<strong style="color:#f9a8d4">④ 情感优先级 A 级及以上</strong>（情感能在使用中自然生长）
+</p>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">🏆 Top 场景推荐（符合全部4个标准）</div>
+<div class="insight-grid">
+<div class="insight-card" style="border-left:4px solid #ef4444">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h4>4.1 工作日志/周记</h4>
+<span class="tag tag-b">B</span>
+</div>
+<p>每周使用，天然暴露工作内容和情绪状态，AI积累后越来越懂用户的工作模式。<strong style="color:#a5b4fc">是目前最符合"高频工具×情感自然生长"公式的场景。</strong></p>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:#64748b">频率：每周 | 上下文暴露度：★★★★★ | 情感涌现速度：3个月</div>
+</div>
+<div class="insight-card" style="border-left:4px solid #ef4444">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h4>4.2 项目复盘</h4>
+<span class="tag tag-a">A</span>
+</div>
+<p>每个项目结束即触发，自然暴露工作中的困难、收获和情绪变化。3种情感机制，是S/A级场景中<strong style="color:#fcd34d">最高频的</strong>（职场人平均每月有1-2个项目/任务周期）。</p>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:#64748b">频率：每月1-3次 | 上下文暴露度：★★★★★ | 情感涌现速度：2个月</div>
+</div>
+<div class="insight-card" style="border-left:4px solid #ef4444">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h4>4.3 成就记录/高光时刻</h4>
+<span class="tag tag-s">S</span>
+</div>
+<p>S级场景，4种情感机制全覆盖。可以是每周/每月的成就打卡，积累后形成强大的"自我档案"。<strong style="color:#fca5a5">情感护城河最强，但需要习惯养成的引导。</strong></p>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:#64748b">频率：每周/每月 | 上下文暴露度：★★★★☆ | 情感涌现速度：1个月</div>
+</div>
+<div class="insight-card" style="border-left:4px solid #ef4444">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h4>3.6 技能树/能力地图</h4>
+<span class="tag tag-a">A</span>
+</div>
+<p>全阶段需求（探索期到独立期都有需求），积累性强，每次更新都在强化用户的职业身份认知。<strong style="color:#fcd34d">是"技能积累×身份认同"双重强化的场景。</strong></p>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:#64748b">频率：每月1-2次 | 上下文暴露度：★★★★☆ | 情感涌现速度：3个月</div>
+</div>
+<div class="insight-card" style="border-left:4px solid #f59e0b">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h4>4.7 年度职业复盘</h4>
+<span class="tag tag-s">S</span>
+</div>
+<p>S级场景，但频率低（每年1次）。不适合作为MVP入口，但<strong style="color:#fca5a5">非常适合作为情感高峰体验</strong>——当用户积累了一年数据后，AI帮他做年度复盘，这一刻的情感冲击是最强的。</p>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:#64748b">频率：每年1次 | 上下文暴露度：★★★★★ | 情感涌现速度：12个月</div>
+</div>
+<div class="insight-card" style="border-left:4px solid #f59e0b">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+<h4>8.4 成就回看/自我激励</h4>
+<span class="tag tag-s">S</span>
+</div>
+<p>S级场景，依托4.3的积累而存在。在用户低谷时主动触发（AI感知到情绪低落时推送"你曾经做到过这些"）。<strong style="color:#fca5a5">这是情感连接最深的触点——AI替代了最好的朋友该做的事。</strong></p>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);font-size:12px;color:#64748b">频率：被动触发 | 上下文暴露度：依赖积累 | 情感涌现速度：即时</div>
+</div>
+</div>
+</div>
+
+<div class="card">
+<div class="card-title">📐 MVP场景组合建议</div>
+<div style="background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(16,185,129,.1));border-radius:16px;padding:24px;border:1px solid rgba(99,102,241,.2)">
+<h4 style="color:white;margin-bottom:16px;font-size:18px">推荐组合：工作日志/周记 + 成就记录 + 技能树</h4>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:16px 0">
+<div style="text-align:center;padding:16px;background:rgba(99,102,241,.2);border-radius:12px">
+<div style="font-size:28px;margin-bottom:8px">📝</div>
+<div style="font-weight:700;color:var(--text-light);margin-bottom:4px">周记/日志</div>
+<div style="font-size:12px;color:var(--text-muted)">高频拉新 + 上下文积累</div>
+</div>
+<div style="text-align:center;font-size:24px;display:flex;align-items:center;justify-content:center;color:var(--accent)">+</div>
+<div style="text-align:center;padding:16px;background:rgba(245,158,11,.2);border-radius:12px">
+<div style="font-size:28px;margin-bottom:8px">🏆</div>
+<div style="font-weight:700;color:var(--text-light);margin-bottom:4px">成就记录</div>
+<div style="font-size:12px;color:var(--text-muted)">情感护城河 + 高光档案</div>
+</div>
+<div style="text-align:center;font-size:24px;display:flex;align-items:center;justify-content:center;color:var(--accent)">+</div>
+<div style="text-align:center;padding:16px;background:rgba(16,185,129,.2);border-radius:12px">
+<div style="font-size:28px;margin-bottom:8px">🌳</div>
+<div style="font-weight:700;color:var(--text-light);margin-bottom:4px">技能树</div>
+<div style="font-size:12px;color:var(--text-muted)">身份认同 + 成长可视化</div>
+</div>
+</div>
+<p style="color:var(--text-muted);font-size:14px;line-height:1.8;margin-top:16px">
+这三个场景互相支撑：<strong style="color:white">周记</strong>提供每周的原始上下文素材 → <strong style="color:white">成就记录</strong>把其中高光时刻沉淀下来 → <strong style="color:white">技能树</strong>把能力成长可视化。三者合一，AI就能做到"每周陪你梳理、随时回看高光、随时告诉你成长了多少"。
+</p>
+</div>
+</div>
+
+<div class="quote-box" style="border-left:4px solid var(--success)">
+<strong style="color:#10b981;font-size:16px">🎯 一句话总结</strong><br><br>
+不要选"情感最浓"的场景作为MVP入口，要选<strong>"最高频 × 最自然暴露上下文"</strong>的场景。情感会在AI陪你"做事"的过程中自然涌现。<br><br>
+工具是载体，上下文是原料，AI记忆是催化剂，情感是涌现结果——不需要刻意设计"情感转化"这个步骤。
+</div>
+</section>
+
+<div class="footer">
+<p><strong>更新时间：2026-03-30</strong> · MVP路径分析 + 三维度工具场景梳理</p>
+<p style="margin-top:8px;opacity:.7">配套报告：AI职业教练场景分析报告（市场规模+竞品分析版）</p>
+</div>
+
+</div>
+<div class="scroll-top" id="scrollTop"></div>
+<script>
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'})})
+});
+const btn=document.getElementById('scrollTop');
+window.addEventListener('scroll',()=>{btn.classList.toggle('visible',window.pageYOffset>300)});
+btn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting){e.target.style.opacity='1';e.target.style.transform='translateY(0)'}})},{threshold:.1,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.card,.section,.insight-card').forEach(el=>{el.style.opacity='0';el.style.transform='translateY(30px)';el.style.transition='opacity .6s ease,transform .6s ease';obs.observe(el)});
+</script>
+</body>
+</html>

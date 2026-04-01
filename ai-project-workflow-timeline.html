@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI产品立项工作流全景 - 时间线视图</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --ink: #0f1117;
+  --ink2: #3d4152;
+  --ink3: #8b92a8;
+  --line: #e8ecf4;
+  --bg: #f4f6fb;
+  --card: #ffffff;
+  --accent: #2563eb;
+  --accent-light: #eff4ff;
+  --gold: #ca8a04;
+  --gold-light: #fefce8;
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --purple: #7c3aed;
+  --purple-light: #f5f3ff;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Outfit', 'Noto Sans SC', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-size: 16px;
+  line-height: 1.75;
+  padding: 60px 24px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.wrap { max-width: 1200px; margin: 0 auto; }
+
+/* ── HEADER ── */
+.header {
+  text-align: center;
+  margin-bottom: 80px;
+  position: relative;
+}
+.header::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: var(--accent);
+  margin: 32px auto 0;
+  border-radius: 2px;
+}
+.label {
+  font-family: 'DM Mono', 'Menlo', monospace;
+  font-size: 13px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+h1 {
+  font-size: 48px;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -1.5px;
+  color: var(--ink);
+  margin-bottom: 18px;
+}
+.byline {
+  font-size: 16px;
+  color: var(--ink3);
+  font-family: 'DM Mono', 'Menlo', monospace;
+}
+
+/* ── FLOW BAR ── */
+.flow-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 80px;
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.flow-node {
+  background: var(--card);
+  border: 2px solid var(--line);
+  border-radius: 28px;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-family: 'Noto Sans SC', sans-serif;
+  font-weight: 500;
+  color: var(--ink2);
+  white-space: nowrap;
+  transition: all .25s;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+.flow-node.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(37,99,235,0.3);
+  transform: scale(1.05);
+}
+.flow-arrow {
+  width: 32px;
+  text-align: center;
+  color: var(--ink3);
+  font-size: 16px;
+}
+
+/* ── TIMELINE CONTAINER ── */
+.timeline {
+  position: relative;
+  padding: 40px 0;
+}
+
+/* Central vertical line */
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, 
+    var(--accent) 0%, 
+    var(--gold) 25%, 
+    var(--red) 50%, 
+    var(--green) 75%, 
+    var(--purple) 100%);
+  border-radius: 2px;
+}
+
+/* ── TIMELINE ITEM ── */
+.timeline-item {
+  position: relative;
+  margin-bottom: 80px;
+  display: grid;
+  grid-template-columns: 1fr 100px 1fr;
+  gap: 0;
+  align-items: center;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Timeline node (circle marker) */
+.timeline-node {
+  grid-column: 2;
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Outfit', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  position: relative;
+  z-index: 10;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  border: 5px solid var(--bg);
+}
+
+.timeline-item.s1 .timeline-node { background: var(--accent); color: #fff; }
+.timeline-item.s2 .timeline-node { background: var(--gold); color: #fff; }
+.timeline-item.s3 .timeline-node { background: var(--red); color: #fff; }
+.timeline-item.s4 .timeline-node { background: var(--green); color: #fff; }
+.timeline-item.s5 .timeline-node { background: var(--purple); color: #fff; }
+
+/* Stage card - alternating left/right */
+.stage-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 36px 40px;
+  box-shadow: 0 4px 12px rgba(15,17,23,0.06), 0 8px 32px rgba(15,17,23,0.08);
+  transition: all .3s;
+  position: relative;
+}
+
+.stage-card:hover {
+  box-shadow: 0 8px 24px rgba(15,17,23,0.1), 0 16px 48px rgba(15,17,23,0.12);
+  transform: translateY(-4px);
+}
+
+/* Left side cards */
+.timeline-item.left .stage-card {
+  grid-column: 1;
+  margin-right: 30px;
+}
+
+/* Right side cards */
+.timeline-item.right .stage-card {
+  grid-column: 3;
+  margin-left: 30px;
+}
+
+/* Arrow connector */
+.stage-card::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+.timeline-item.left .stage-card::before {
+  right: -20px;
+  border-width: 15px 0 15px 20px;
+}
+
+.timeline-item.right .stage-card::before {
+  left: -20px;
+  border-width: 15px 20px 15px 0;
+}
+
+.timeline-item.s1.left .stage-card::before { border-color: transparent transparent transparent var(--card); }
+.timeline-item.s1.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+.timeline-item.s2.left .stage-card::before { border-color: transparent transparent transparent var(--card); }
+.timeline-item.s2.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+.timeline-item.s3.left .stage-card::before { border-color: transparent transparent transparent var(--card); }
+.timeline-item.s3.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+.timeline-item.s4.left .stage-card::before { border-color: transparent transparent transparent var(--card); }
+.timeline-item.s4.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+.timeline-item.s5.left .stage-card::before { border-color: transparent transparent transparent var(--card); }
+.timeline-item.s5.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+
+/* Stage header with color accent */
+.timeline-item.s1 .stage-card { border-top: 5px solid var(--accent); }
+.timeline-item.s2 .stage-card { border-top: 5px solid var(--gold); }
+.timeline-item.s3 .stage-card { border-top: 5px solid var(--red); }
+.timeline-item.s4 .stage-card { border-top: 5px solid var(--green); }
+.timeline-item.s5 .stage-card { border-top: 5px solid var(--purple); }
+
+.stage-label {
+  font-family: 'DM Mono', 'Menlo', monospace;
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.timeline-item.s1 .stage-label { color: var(--accent); }
+.timeline-item.s2 .stage-label { color: var(--gold); }
+.timeline-item.s3 .stage-label { color: var(--red); }
+.timeline-item.s4 .stage-label { color: var(--green); }
+.timeline-item.s5 .stage-label { color: var(--purple); }
+
+.stage-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+
+.stage-subtitle {
+  font-size: 16px;
+  color: var(--ink3);
+  font-family: 'DM Mono', 'Menlo', monospace;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+.blocks { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+  gap: 20px; 
+}
+
+.block { 
+  border-radius: 14px; 
+  padding: 24px 26px;
+}
+
+.block-label {
+  font-size: 11px;
+  font-family: 'DM Mono', 'Menlo', monospace;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.block-text {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--ink2);
+  font-weight: 400;
+}
+
+.block-text strong { 
+  color: var(--ink); 
+  font-weight: 600; 
+}
+
+.block.output   { background: var(--accent-light); }
+.block.output .block-label { color: var(--accent); }
+.block.problem  { background: var(--red-light); }
+.block.problem .block-label { color: var(--red); }
+.block.fix      { background: var(--green-light); }
+.block.fix .block-label { color: var(--green); }
+.block.value    { background: var(--gold-light); }
+.block.value .block-label { color: var(--gold); }
+.block.insight  { background: var(--purple-light); }
+.block.insight .block-label { color: var(--purple); }
+
+/* ── CONCLUSION ── */
+.conclusion {
+  margin-top: 100px;
+  background: linear-gradient(135deg, #0f1117 0%, #1e293b 100%);
+  color: #fff;
+  border-radius: 24px;
+  padding: 50px 52px;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 44px;
+  align-items: center;
+  box-shadow: 0 8px 24px rgba(15,17,23,0.15);
+}
+
+.conclusion-label {
+  font-family: 'DM Mono', 'Menlo', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #7c8299;
+  margin-bottom: 12px;
+}
+
+.conclusion h3 {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #fff;
+  letter-spacing: -0.8px;
+}
+
+.conclusion-text {
+  font-size: 17px;
+  line-height: 1.9;
+  color: #b0b8cc;
+}
+
+.conclusion-text strong { 
+  color: #fff; 
+  font-weight: 600; 
+}
+
+.tag-row { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 10px; 
+  margin-top: 24px; 
+}
+
+.tag {
+  font-family: 'DM Mono', 'Menlo', monospace;
+  font-size: 13px;
+  padding: 8px 18px;
+  border-radius: 24px;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  color: #b0b8cc;
+  background: rgba(255,255,255,0.08);
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center;
+  margin-top: 60px;
+  font-family: 'DM Mono', 'Menlo', monospace;
+  font-size: 13px;
+  color: var(--ink3);
+  letter-spacing: 1px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .timeline::before {
+    left: 40px;
+  }
+  
+  .timeline-item {
+    grid-template-columns: 80px 1fr;
+    gap: 0;
+    margin-bottom: 60px;
+  }
+  
+  .timeline-node {
+    grid-column: 1;
+    width: 60px;
+    height: 60px;
+    font-size: 22px;
+    margin-left: 10px;
+  }
+  
+  .timeline-item.left .stage-card,
+  .timeline-item.right .stage-card {
+    grid-column: 2;
+    margin-left: 30px;
+    margin-right: 0;
+  }
+  
+  .timeline-item.left .stage-card::before,
+  .timeline-item.right .stage-card::before {
+    left: -20px;
+    right: auto;
+    border-width: 15px 20px 15px 0;
+  }
+  
+  .timeline-item.s1.left .stage-card::before,
+  .timeline-item.s1.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+  .timeline-item.s2.left .stage-card::before,
+  .timeline-item.s2.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+  .timeline-item.s3.left .stage-card::before,
+  .timeline-item.s3.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+  .timeline-item.s4.left .stage-card::before,
+  .timeline-item.s4.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+  .timeline-item.s5.left .stage-card::before,
+  .timeline-item.s5.right .stage-card::before { border-color: transparent var(--card) transparent transparent; }
+  
+  .conclusion {
+    grid-template-columns: 1fr;
+    padding: 40px 32px;
+  }
+  
+  h1 { font-size: 36px; }
+  .stage-title { font-size: 22px; }
+}
+
+@media (max-width: 600px) {
+  body { font-size: 15px; padding: 40px 16px; }
+  h1 { font-size: 28px; }
+  .stage-title { font-size: 20px; }
+  .stage-subtitle { font-size: 14px; }
+  .block-text { font-size: 15px; }
+  .conclusion h3 { font-size: 24px; }
+  .conclusion-text { font-size: 15px; }
+  .blocks { grid-template-columns: 1fr; }
+  .flow-bar { gap: 8px; }
+  .flow-node { font-size: 13px; padding: 8px 16px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="label">AI · Product · 2026</div>
+    <h1>AI产品立项工作流全景</h1>
+    <div class="byline">刘阳 &nbsp;·&nbsp; 2026年3月24–26日 &nbsp;·&nbsp; hatch-rocket 多Agent框架</div>
+  </div>
+
+  <!-- FLOW BAR -->
+  <div class="flow-bar">
+    <div class="flow-step"><div class="flow-node">市场全景</div><div class="flow-arrow">→</div></div>
+    <div class="flow-step"><div class="flow-node">确定方向</div><div class="flow-arrow">→</div></div>
+    <div class="flow-step"><div class="flow-node active">初步扫描</div><div class="flow-arrow">→</div></div>
+    <div class="flow-step"><div class="flow-node">精准收敛</div><div class="flow-arrow">→</div></div>
+    <div class="flow-step"><div class="flow-node">深度验证</div></div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+
+    <!-- Stage 1 - Left -->
+    <div class="timeline-item s1 left">
+      <div class="stage-card">
+        <div class="stage-label">SURVEY</div>
+        <div class="stage-title">摸清行业现状</div>
+        <div class="stage-subtitle">建立AI市场全局认知，确定判断框架</div>
+        <div class="blocks">
+          <div class="block output">
+            <div class="block-label">📄 核心产出</div>
+            <div class="block-text">
+              <strong>AI产品市场调研V3.0（创业立项版）</strong><br>
+              · AI产业4阶段演进路径<br>
+              · 4层产业结构分析（算力→模型→平台→应用）<br>
+              · ChatGPT / Midjourney / Notion AI / LangChain 标杆拆解<br>
+              · ToC成功公式：高频场景 × 可验收结果 × 替代成本
+            </div>
+          </div>
+          <div class="block value">
+            <div class="block-label">💡 阶段价值</div>
+            <div class="block-text">
+              建立"能论证的判断框架"而非凭感觉选方向。明确<strong>不做</strong>：通用AI助手（巨头免费覆盖）、纯效率工具壳（留存仅21%）。为下一步选赛道提供有逻辑支撑的过滤标准。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-node">01</div>
+    </div>
+
+    <!-- Stage 2 - Right -->
+    <div class="timeline-item s2 right">
+      <div class="timeline-node">02</div>
+      <div class="stage-card">
+        <div class="stage-label">FOCUS</div>
+        <div class="stage-title">确定大方向：Agent垂直赛道</div>
+        <div class="stage-subtitle">从全市场中锁定值得深入的机会层</div>
+        <div class="blocks">
+          <div class="block output">
+            <div class="block-label">📄 核心产出</div>
+            <div class="block-text">
+              方向决策：聚焦"<strong>垂直任务Agent</strong>"<br><br>
+              · AI Agent市场 CAGR 45.5%，是当前最大创业窗口<br>
+              · 76% 企业选择"买"而非"自建"<br>
+              · PLG驱动的AI应用占比27%（传统SaaS仅7%）<br>
+              · 竞争焦点已从"模型能力"转向"工作流位置+数据沉淀"
+            </div>
+          </div>
+          <div class="block value">
+            <div class="block-label">💡 阶段价值</div>
+            <div class="block-text">
+              基于第一阶段框架做方向收窄，排除"看起来热但做不起来"的假机会。结合团队6人规模+工具基因，确认垂直Agent是<strong>技术可达、窗口开放、竞争可行</strong>的最优切入层。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 3 - Left -->
+    <div class="timeline-item s3 left">
+      <div class="stage-card">
+        <div class="stage-label">SCAN</div>
+        <div class="stage-title">多Agent初步扫描垂直赛道</div>
+        <div class="stage-subtitle">调用 hatch-rocket 框架，全行业不设限双语扫描</div>
+        <div class="blocks">
+          <div class="block" style="background: linear-gradient(135deg, #fef3c7, #fff7ed); border-left: 4px solid #f59e0b; padding: 20px 24px; border-radius: 0 10px 10px 0;">
+            <div class="block-label" style="color: #b45309;">🤖 什么是多Agent？</div>
+            <div class="block-text" style="color: #78350f;">
+              <strong>多Agent = 多个AI角色协作完成一项复杂任务。</strong><br><br>
+              传统方式：产品经理一个人调研→分析→筛选→评估，串行执行，效率受限于个人精力。<br><br>
+              多Agent方式：同时派出多个AI"专家"并行工作——<strong>市场分析师</strong>负责扫描行业数据、<strong>技术评审员</strong>评估可行性、<strong>商业顾问</strong>判断商业价值、<strong>用户研究员</strong>分析需求痛点。它们各自独立思考，最后汇总交叉验证，输出结构化结论。<br><br>
+              <strong>效果：</strong>把原本需要一个人花数天完成的广泛调研，压缩到数小时内完成，且覆盖面远超人工。下面的扫描结果，就是多Agent协作的产出。
+            </div>
+          </div>
+          <div class="block output">
+            <div class="block-label">📄 核心产出</div>
+            <div class="block-text">
+              猎风者扫描报告：从30+线索中初筛出候选方向，包括：<br><br>
+              · 宠物健康 AI Agent<br>
+              · AI情感陪伴<br>
+              · AI银发陪伴<br>
+              · AI内容创作<br>
+              · 跨境电商运营<br>
+              · ……等十余个方向
+            </div>
+          </div>
+          <div class="block problem">
+            <div class="block-label">⚠️ 发现的问题</div>
+            <div class="block-text">
+              模型缺乏关键约束，导致输出<strong>过于发散</strong>：<br><br>
+              · 未注入团队优势与能力边界<br>
+              · 未设定项目倾向与排除规则<br>
+              · 未考虑Agent新能力的适配度<br><br>
+              结果：几十个方向需人工逐一评估，<strong>选择成本极高</strong>，立项效率低
+            </div>
+          </div>
+          <div class="block value">
+            <div class="block-label">💡 阶段价值</div>
+            <div class="block-text">
+              验证了多Agent扫描的可行性与覆盖广度，同时<strong>暴露了模型约束缺失的问题</strong>——这是推动下一步优化的核心驱动力。没有这一步，就没有后续的精准收敛。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-node">03</div>
+    </div>
+
+    <!-- Stage 4 - Right -->
+    <div class="timeline-item s4 right">
+      <div class="timeline-node">04</div>
+      <div class="stage-card">
+        <div class="stage-label">REFINE</div>
+        <div class="stage-title">优化模型约束，精准收敛到15个赛道</div>
+        <div class="stage-subtitle">注入团队DNA + 业务边界 + 四角色交叉验证</div>
+        <div class="blocks">
+          <div class="block fix">
+            <div class="block-label">🔧 优化措施</div>
+            <div class="block-text">
+              向多Agent模型注入三类约束：<br><br>
+              <strong>① 团队DNA</strong>：6人画像、技术栈、历史资产（VPN/远控/模拟器）<br>
+              <strong>② 业务边界</strong>：排除垂直数据库依赖、重度线下、纯B2B<br>
+              <strong>③ 四角色验证</strong>：指南针（潜力）× 黑乌鸦（风险）× 增长黑客（经济模型）× 掌舵人（团队适配）
+            </div>
+          </div>
+          <div class="block output">
+            <div class="block-label">📄 核心产出</div>
+            <div class="block-text">
+              · 5轮评审，15个精准垂直赛道<br>
+              · 每个赛道：五维验证 + MVP方案 + 单位经济 + 团队适配<br>
+              · 综合排名：AI社媒自动化（S级）/ AI求职助手（A+）/ AI桌面自动化（A+）……<br><br>
+              每个方向均经过四角色"否决投票"，无明显缺陷才进入最终名单
+            </div>
+          </div>
+          <div class="block value">
+            <div class="block-label">💡 阶段价值</div>
+            <div class="block-text">
+              <strong>本周最关键的优化动作。</strong> 加约束不是限制AI，而是让AI在对的范围内挖得更深。效果：发散从"几十个→15个且个个可行"，每个赛道分析深度显著提升，人工选择成本大幅降低，<strong>立项效率系统性提升</strong>。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stage 5 - Left -->
+    <div class="timeline-item s5 left">
+      <div class="stage-card">
+        <div class="stage-label">VERIFY</div>
+        <div class="stage-title">人工选定"AI职业教练"，深度调研验证</div>
+        <div class="stage-subtitle">87个场景 × 竞品验证 × 蓝海识别 × 巨头威胁分析</div>
+        <div class="blocks">
+          <div class="block output">
+            <div class="block-label">📄 核心产出</div>
+            <div class="block-text">
+              AI职业教练场景分析报告（已验证版）：<br><br>
+              · 87个场景（工具35 + 情感42 + 洞察10）<br>
+              · 71% 场景竞争空白/弱竞争<br>
+              · 14个蓝海机会（S级5个 + A级9个）<br>
+              · 修正6处竞品数据错误<br>
+              · 5大通用AI巨头战略威胁评估
+            </div>
+          </div>
+          <div class="block insight">
+            <div class="block-label">🔍 关键洞察</div>
+            <div class="block-text">
+              <strong>护城河 = 记忆深度 × 职场数据 × 主动性</strong><br><br>
+              巨头不会做，因为战略方向不兼容：豆包=娱乐、千问=生活服务、Kimi=生产力工具。真正的威胁来自跨界者（BOSS直聘+AI / 壹心理+AI），<strong>窗口期约12-18个月</strong>。
+            </div>
+          </div>
+          <div class="block value">
+            <div class="block-label">💡 阶段价值</div>
+            <div class="block-text">
+              逐场景验证确认"空白是真空白"，而非凭感觉判断。同时回答了立项前必须回答的三个问题：需求真实吗？护城河从哪来？巨头会来抢吗？——完成立项决策的最后闭环。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="timeline-node">05</div>
+    </div>
+
+  </div><!-- /timeline -->
+
+  <!-- CONCLUSION -->
+  <div class="conclusion">
+    <div>
+      <div class="conclusion-label">SUMMARY</div>
+      <h3>一周做了什么？</h3>
+      <div class="tag-row">
+        <span class="tag">5个阶段</span>
+        <span class="tag">87个场景</span>
+        <span class="tag">15个赛道</span>
+        <span class="tag">14个蓝海机会</span>
+        <span class="tag">12-18月窗口期</span>
+      </div>
+    </div>
+    <div class="conclusion-text">
+      从"AI市场全景调研"到"AI职业教练赛道确认"，完成了一套<strong>可复用的AI产品立项方法论</strong>：全景认知建立判断框架 → 多Agent系统性扫描替代人工找方向 → 发现发散问题、注入约束迭代优化 → 人机协作精准决策 → 深度验证锁定机会。<br><br>
+      核心价值不只是"找到了一个方向"，而是验证了<strong>一套可以规模化复用的立项流程</strong>：下一次进入新赛道，可以直接套用这套框架，大幅提升立项效率。
+    </div>
+  </div>
+
+  <footer>刘阳 &nbsp;·&nbsp; 2026-03-26 &nbsp;·&nbsp; hatch-rocket-ai v1.0</footer>
+
+</div>
+</body>
+</html>
